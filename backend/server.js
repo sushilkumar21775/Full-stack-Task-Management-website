@@ -91,34 +91,37 @@ app.use((req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Start server
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('🚀 ================================');
-  console.log(`   Server running on port ${PORT}`);
-  console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   URL: http://localhost:${PORT}`);
-  console.log('🚀 ================================');
-  console.log('');
-});
-
-// Graceful shutdown
-const gracefulShutdown = () => {
-  console.log('\n⏳ Shutting down gracefully...');
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
+// Start server (only for local development)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  const server = app.listen(PORT, () => {
+    console.log('');
+    console.log('🚀 ================================');
+    console.log(`   Server running on port ${PORT}`);
+    console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   URL: http://localhost:${PORT}`);
+    console.log('🚀 ================================');
+    console.log('');
   });
 
-  // Force shutdown after 10 seconds
-  setTimeout(() => {
-    console.error('❌ Forced shutdown');
-    process.exit(1);
-  }, 10000);
-};
+  // Graceful shutdown
+  const gracefulShutdown = () => {
+    console.log('\n⏳ Shutting down gracefully...');
+    server.close(() => {
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
 
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
+    // Force shutdown after 10 seconds
+    setTimeout(() => {
+      console.error('❌ Forced shutdown');
+      process.exit(1);
+    }, 10000);
+  };
 
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
+}
+
+// Export for Vercel serverless
 export default app;
